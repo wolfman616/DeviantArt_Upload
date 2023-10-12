@@ -9,8 +9,19 @@ or EXE
 
 ![image](https://github.com/wolfman616/DeviantArt_Upload/assets/62726599/831344e8-63d3-42ed-9de3-faf20afc29a1)
 
-you will see this.
+at the moment these need to be added manually by the user. Copy them from the Applications API page
 
-It has the ability to initially leave the cursor in whichever field you want it to, I have it set to the tags field as every Deviation I make has the same title usually, but you may prefer something else.
+
+Computer\HKEY_CURRENT_USER\Software\_MW\deviantartClientSecret
+Computer\HKEY_CURRENT_USER\Software\_MW\deviantartClientID
+
+as this screenshot illustrates
+
+![image](https://github.com/wolfman616/DeviantArt_Upload/assets/62726599/295cbd4a-132d-45aa-bcb9-ccd7a97f0cfd)
+
+
+When invoked, you will see this:
 
 ![image](https://github.com/wolfman616/DeviantArt_Upload/assets/62726599/5ccc4a6e-33dc-421e-9fb1-346c46ba11a1)
+
+It has the ability to initially leave the cursor in whichever field you want it to, I have it set to the tags field as every Deviation I make has the same title usually, but you may prefer something else. see the OPT options like OPT_STARTUP_FOCUS_TITLE, beware only set one to true at a time or it will try and initially highligh mutliple fields which will not work.
