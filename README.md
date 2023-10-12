@@ -21,6 +21,7 @@ as this screenshot illustrates
 
 
 When invoked, you will see this:
+![image](https://github.com/wolfman616/DeviantArt_Upload/assets/62726599/2b17b319-88db-43d7-bbc6-f34baeaf1529)
 
 ![image](https://github.com/wolfman616/DeviantArt_Upload/assets/62726599/5ccc4a6e-33dc-421e-9fb1-346c46ba11a1)
 
