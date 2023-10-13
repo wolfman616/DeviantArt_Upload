@@ -1,5 +1,5 @@
 # DeviantArt_Upload
-
+Added mature optional tickbox
 requires python 3.7 or greater
 
 requires ahk v1 
