@@ -54,7 +54,6 @@ deviantart_client_id = ""
 deviantart_client_secret = ""
 deviantart_access_token = ""
 
-
 # Define the token endpoint
 token_url = "https://www.deviantart.com/oauth2/token"
 
@@ -116,7 +115,4 @@ except Exception as e:
     print(f"An error occurred: {str(e)}")
     pass
     print(f"Deviantdssdsdart Client ID: {deviantart_access_token}")
-
 print(response.text)
-
-

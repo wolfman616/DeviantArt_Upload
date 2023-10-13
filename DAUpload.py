@@ -78,23 +78,24 @@ access_token = "6e35d533b6584606680a963ea60c390b7bff8ef2551488c727"
 
 item_id = None  # Initialize item_id as None
 
-def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path):
+def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path, is_mature="no"):
     # Upload the file to DeviantArt
     params = {
         "title": title,
         "artist_comments": artist_comments,
         "tags": tags,
         "is_dirty": is_dirty,
+        "is_mature": is_mature  # Set "is_mature" parameter to "no" by default
     }
     files = {
         "test": (os.path.basename(file_path), open(file_path, "rb"), "image/png")
     }
-    
+
     headers = {
         "Authorization": f"Bearer {deviantart_access_token}",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0"  # Replace with your User Agent    
-        }
-    
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0"  # Replace with your User Agent
+    }
+
     response = requests.post(upload_url, data=params, files=files, headers=headers)
 
     if response.status_code == 200:
@@ -111,13 +112,13 @@ def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path):
         #here is where a bad token will be shown in the response inlcuding "{"error":"invalid_token","error_description":"Expired oAuth2 user token. The client should request a new one with an access code or a refresh token.","status":"error"}"
 
 
-def publish_to_deviantart(item_id):
-    # Define your publish parameters here (as shown in previous responses)
+def publish_to_deviantart(item_id, is_mature="no"):
+    # Define your publish parameters here, including the "Mature" status
     publish_params = {
         "itemid": item_id,
-        "is_mature": "no",  # Modify as needed
+        "is_mature": is_mature,
         "agree_submission": "1",
-        "agree_tos": "1",        
+        "agree_tos": "1",
     }
     
     headers = {
@@ -140,16 +141,16 @@ if __name__ == "__main__":
     parser.add_argument("--artist_comments", help="Additional comments by the artist")
     parser.add_argument("--tags", nargs="+", help="Tags for the submission")
     parser.add_argument("--is_dirty", action="store_true", help="Is the submission currently being edited")
+    parser.add_argument("--mature", choices=["yes", "no"], default="no", help="Set mature status (yes or no, default is no)")
     parser.add_argument("--file", required=True, help="Path to the file to upload")
 
     args = parser.parse_args()
 
-    item_id = upload_to_deviantart(args.title, args.artist_comments, args.tags, args.is_dirty, args.file)
-    print(item_id)
-    print(args)
+    item_id = upload_to_deviantart(args.title, args.artist_comments, args.tags, args.is_dirty, args.file, args.mature)
 
     if item_id is not None:
-        publish_to_deviantart(item_id)
-        #print(response.text)
+        publish_to_deviantart(item_id, args.mature)
     else:
-        print("WARNING NO ID")
+        print("WARNING: No ID")
+
+
