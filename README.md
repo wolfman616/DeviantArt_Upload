@@ -4,6 +4,8 @@ requires python 3.7 or greater
 
 requires ahk v1 
 
+![image](https://i.imgur.com/7yjd2KQ.gif)
+
 make a shell menu which invokes the command autohotkey.exe "C:\Script\AHK\z_ConTxt\DA_UPLOAD.ahk" "%l"
 or EXE
 
