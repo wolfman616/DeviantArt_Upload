@@ -79,14 +79,20 @@ access_token = "6e35d533b6584606680a963ea60c390b7bff8ef2551488c727"
 item_id = None  # Initialize item_id as None
 
 def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path, is_mature="no"):
+    if tags:
+        tags_list = tags.split(',')
     # Upload the file to DeviantArt
     params = {
         "title": title,
         "artist_comments": artist_comments,
-        "tags": tags,
         "is_dirty": is_dirty,
         "is_mature": is_mature  # Set "is_mature" parameter to "no" by default
     }
+    # Add tags to the parameters with numerical indices
+    if tags:
+        for index, tag in enumerate(tags.split(',')):
+            params[f"tags[{index}]"] = tag
+    
     files = {
         "test": (os.path.basename(file_path), open(file_path, "rb"), "image/png")
     }
@@ -112,19 +118,25 @@ def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path, is_m
         #here is where a bad token will be shown in the response inlcuding "{"error":"invalid_token","error_description":"Expired oAuth2 user token. The client should request a new one with an access code or a refresh token.","status":"error"}"
 
 
-def publish_to_deviantart(item_id, is_mature="no"):
+def publish_to_deviantart(item_id, is_mature="no", mature_level=None, mature_classification_csv=None):
     # Define your publish parameters here, including the "Mature" status
     publish_params = {
         "itemid": item_id,
         "is_mature": is_mature,
         "agree_submission": "1",
         "agree_tos": "1",
+        "allow_free_download": "0",
     }
-    
+
+    if mature_classification_csv:
+        mature_classifications = mature_classification_csv.split(',')
+        for index, classification in enumerate(mature_classifications):
+            publish_params[f"mature_classification[{index}]"] = classification
+
     headers = {
         "Authorization": f"Bearer {deviantart_access_token}",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0"  # Replace with your User Agent    
-        }
+    }
     # Make the publish request to DeviantArt
     publish_response = requests.post(publish_url, data=publish_params, headers=headers)
 
@@ -135,22 +147,33 @@ def publish_to_deviantart(item_id, is_mature="no"):
         print("Publish failed. Status code:", publish_response.status_code)
         print(publish_response.text)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Upload and publish a file to DeviantArt stash.")
     parser.add_argument("--title", required=True, help="Title of the submission")
     parser.add_argument("--artist_comments", help="Additional comments by the artist")
-    parser.add_argument("--tags", nargs="+", help="Tags for the submission")
+    parser.add_argument("--tags_csv", help="CSV string of tags for the submission (e.g., 'tag1,tag2,tag3')")
     parser.add_argument("--is_dirty", action="store_true", help="Is the submission currently being edited")
-    parser.add_argument("--mature", choices=["yes", "no"], default="no", help="Set mature status (yes or no, default is no)")
+    parser.add_argument("--mature", choices=["yes", "no"], default="no", help="Set mature status (yes or no, default is no")
+    parser.add_argument("--mature_level", choices=["strict", "moderate"], help="Mature level of the submission (required if 'mature' is 'yes')")
+    parser.add_argument("--mature_classification_csv", help="CSV string of mature classification values (e.g., 'nudity,gore,language')")
     parser.add_argument("--file", required=True, help="Path to the file to upload")
 
     args = parser.parse_args()
 
-    item_id = upload_to_deviantart(args.title, args.artist_comments, args.tags, args.is_dirty, args.file, args.mature)
+    if args.mature == "yes" and (not args.mature_level or not args.mature_classification_csv):
+        parser.error("If 'mature' is 'yes', 'mature_level' and 'mature_classification_csv' are required.")
+
+    # Convert the CSV string of tags to a list
+    if args.tags_csv:
+        tags_list = args.tags_csv.split(',')
+
+    item_id = upload_to_deviantart(args.title, args.artist_comments, args.tags_csv, args.is_dirty, args.file, args.mature)
 
     if item_id is not None:
-        publish_to_deviantart(item_id, args.mature)
+        publish_to_deviantart(item_id, args.mature, args.mature_level, args.mature_classification_csv)
     else:
         print("WARNING: No ID")
+
 
 

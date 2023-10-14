@@ -1,17 +1,43 @@
-﻿SetWinDelay, -1
-global gui_W:=300, gui_H:=166
+﻿DetectHiddenWindows,On
+DetectHiddenText,	On
+SetTitleMatchMode,2
+SetTitleMatchMode,Slow
+SetWinDelay,-1
+coordMode,	ToolTip,Screen
+coordmode,	Mouse,	Screen
+
+SetWinDelay, -1
+global gui_W:=300, gui_H:=166, tags
 , OPT_STARTUP_FOCUS_TAGS:= true, dhwcheck
 , TargetFile:= a_args[1]? a_args[1] : "C:\Users\ninj\Desktop11\test.png"
 , opt_mature:= false
+, opt_guiAeroBlur:= true
+
+SplitPath,TargetFile,,,Extension
+
+valid_extensions:= "jpg,png,tiff,jfif,bmp,webp,gif,apng"
+
+loop,parse,valid_extensions,`,
+	if(Extension=a_loopfield)
+		continue:=true
+
+if(!continue) {
+	msgbox,0,% "error",%  "invalid file type, Exiting",3000
+	exitapp,
+}
+
+opt_guiAeroBlur? 	(aero_lib(), Aero_StartUp()) : ()
+
+
 WS_POPUP = 0x80000000
 WS_CHILD = 0x40000000
 
 
-Gui, 1: +LastFound +hWndhGui1 +Owner +AlwaysOnTop +hwndghwnd +0x40000 -0x400000
-Gui, 1: Color, 181535
-;WinSet, TransColor, 000000, % "ahk_id " hGui1
+Gui, 1: +LastFound +hWndhGui1 +AlwaysOnTop +hwndghwnd -0x400000 +e0x2000000
+WinSet, TransColor, ffffff, % "ahk_id " hGui1
 ;Gui, 1: Add, Picture, w300 h165 x0 y0 AltSubmit BackgroundTrans, %A_ScriptDir%\Ressources\grey.png
 Gui, 1: Font, s11 bold, Segoe UI
+onmessage(0x201,"ONLbutton")
 
 Parent_ID := WinExist()
 Gui, 2: +hwndbumhwnd +e0x2000000
@@ -43,13 +69,18 @@ Gui, 1: Show,x-300 y-200 w%gui_W% h%gui_H%,no_glass
 ;Gui, 1: Add, Text, vtext2 w270 x15 y15 AltSubmit, Please enter the Password:
 Gui, 2: Show, x0 y0 w300 h135,no_glass
 Gui, 1: hide
-EnableBlur(ghwnd)
-win_move(ghwnd,A_screenwidth*.5-gui_W,A_screenheight*.5-gui_H,"","","")
+Aero_BlurWindow(ghwnd)
+; win_move(ghwnd,A_screenwidth*.5-gui_W,A_screenheight*.5-gui_H,"","","")
+windowCenter(ghwnd)
 winset redraw,,ahk_id %bumhwnd%
-Gui, 1: show
+Gui, 1: show,hide
+ 
 
-Win_Animate(ghwnd,"hneg slide",200)
-winactivate, ahk_id %ghwnd%
+Win_Animate(ghwnd,"activate hneg slide",300)
+winset,style,+0x40000,ahk_id %ghwnd%
+WinSet, TransColor, ffffff, % "ahk_id " hGui1
+
+;winactivate, ahk_id %ghwnd%
 if OPT_STARTUP_FOCUS_TITLE {
 	GuiControl,Focus,% edTitlewnd
 	SendMessage,0xB1,0,-1,,ahk_id %edTitlewnd% ;EM_SETSEL 177 0xB1
@@ -63,13 +94,70 @@ if OPT_STARTUP_FOCUS_TITLE {
 }
 
 
-onmessage(0x201,"ONLbutton")
 return,
 
 CheckChecks:
 opt_mature:=!opt_mature
 guicontrol,,% dhwcheck,% opt_mature? -1 : 0
 return,
+
+showMatgui() {
+	global
+	gui,mat:new
+	,+lastfound +hWndhGuiMat +AlwaysOnTop -0x400000 +e0x2000000
+	guiMat:=[]
+	,guiMat.Hwnd:=hGuiMat
+	,guiMat.W:=144,	guiMat.H:=180
+	; Radio buttons for main classification toggle
+; WinSet, TransColor, ffffff, % "ahk_id " hGui1
+
+	Gui, Add, Radio, x12 y12 vModerate Checked, Moderate
+	Gui, Add, Radio, x90 y12 vStrict, Strict
+	; Checkboxes for the specified options
+	Gui, Add, CheckBox, x24 vNudity, Nudity
+	Gui, Add, CheckBox, x24 vSexual, Sexual
+	Gui, Add, CheckBox, x24 vgore, gore
+	Gui, Add, CheckBox, x24 vlanguage, language
+	Gui, Add, CheckBox, x24 vIdeology, Ideology
+	Gui, Add, Button,% "x" (.5*guiMat.W-40) " y" guiMat.H-42 " w80 h30  gGuiMatSubmit Default", Submit
+	gui,show,% "hide x-200 y-200 w" guiMat.W " h" guiMat.H
+	opt_guiAeroBlur? Aero_BlurWindow(guiMat.Hwnd) : ()
+	windowCenter(hGuiMat)
+}
+
+GuiMatSubmit:
+gui,mat:submit, nohide
+
+winset,style,-0x40000,% "ahk_id " guiMat.Hwnd
+; WinSet, TransColor, ffffff, % "ahk_id " uiMat.Hwnd
+winset,exstyle,-0x2000000,% "ahk_id " guiMat.Hwnd
+
+Win_Animate(guiMat.Hwnd,"hide blend",900)
+
+mature_level:= Moderate? "Moderate" : Strict? "Strict"
+loop,parse,% "nudity,sexual,gore,language,ideology",`,
+	if (%A_loopfield%)!=0
+		mature_classification.= A_loopfield ","
+mature_classification:= chr(34) . mature_classification:= rtrim(mature_classification,",") . chr(34)
+;msgbox % mature_level " mature_level`nmature_classification" mature_classification
+goto UploadStart
+return,
+
+windowCenter(hwnd,show=0) {
+    local
+    static centX:= A_ScreenWidth /2, centY:= A_ScreenHeight /2
+    winExist("AHK_ID " . hwnd)
+    winGetPos, xx, yy, gWidth, gHeight
+
+    ; Calculate the new X and Y coordinates for centering
+    gX := Round(centX -(gWidth /2))
+    , gY := Round(centY -(gHeight /2))
+
+    ; Reposition the window
+    winMove,,,gX,gY
+		if show
+			winShow
+}
 
 guicancel:
 guiescape:
@@ -81,6 +169,7 @@ ONLbutton(){
 }
 
 col() {
+return
 	static go:= !false
 	go:= winactive(ghwnd)? true : false
 	(go? (col:=181535,col2:="c220040", col3:="c99aafe") :  (col:= 050513, col2:= "c200570", col3:="c6688aff"))
@@ -93,7 +182,7 @@ col() {
 
 ~^rbutton::
 mousegetpos,,,win
-EnableBlur(win)
+Aero_BlurWindow(win)
 return,
 
 EnableBlur(hWnd) {
@@ -123,34 +212,52 @@ EnableBlur(hWnd) {
 
 guiSubmit:
 Gui, 1: Submit, NoHide
+
 charsToReplace:= """,.!/[]()\£$%^&*#"""
 loop,parse,% charsToReplace
 	tags:= strreplace(tags,a_loopfield,chr(32)) ;replace all undesirables with space
 loop.2
 	tags:= strreplace(tags,chr(32) . chr(32),chr(32)) ;eliminate all consecutive spaces
-tags:= rTrim(tags,chr(32)) ;remove any trailing spaces
+
+;remove any trailing spaces;replace spaces with commas and quote
+tags:= chr(34) . strReplace(tags:= rTrim(tags,chr(32)),chr(32),",") . chr(34)
+winset,style,-0x40000,ahk_id %ghwnd%
+WinSet, TransColor, ffffff, % "ahk_id " ghwnd
+
+Win_Animate(ghwnd,"hide hpos slide",300)
+
+if opt_mature {
+	showMatgui()
+	winset,style,-0x40000,% "ahk_id " guiMat.Hwnd
+
+	Win_Animate(guiMat.Hwnd,"activate hneg slide",300)
+	winset,style,+0x40000,% "ahk_id " guiMat.Hwnd
+
+	return,
+}
 
 UploadStart: ;python.exe "C:\Script\Python\DAUpload.py" --title "PSYCHO515" --artist_comments "" --tags psychosis --mature no --is_dirty --file "%l"
 mature:= opt_mature? "yes" : "no"
-string:= "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34)
-string.=  " --title " . chr(34) . "PSYCHO515" . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --mature " . mature . " --is_dirty --file " . chr(34) . TargetFile . chr(34)
-; string.=  " --title " . chr(34) . "PSYCHO515" . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --is_dirty --file " . chr(34) . TargetFile . chr(34)
-
+	string:= "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34)
+	string.=  " --title " . chr(34) . "PSYCHO515" . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --mature " . mature . " --mature_level " . mature_level . " --mature_classification " . mature_classification . " --is_dirty --file " . chr(34) . TargetFile . chr(34)
 Gui, 1: Destroy
-msgbox %  string
-msgbox % response:= RunWait1(string)
+ ; msgbox %  string
+ ;msgbox % 
+ response:= RunWait1(string)
 if instr(response,"Bad token: The access token is invalid") {
 	string2:= "python.exe " . chr(34) . "C:\Script\Python\DAAuthorization.py" . chr(34)
-	msgbox % 	response2:= RunWait1(string2)
+	; msgbox % 
+	response2:= RunWait1(string2)
 	if instr(response2,"Authorization code received") {
 		string3:= "python.exe " . chr(34) . "C:\Script\Python\DATokenRetrieval.py" . chr(34)
-		msgbox % "n  " 		response3:= RunWait1(string3)
+		; msgbox % "n  " 		
+		response3:= RunWait1(string3)
 		goto, uploadstart
 	}
-} else {	; Define the regex pattern for an HTTPS URL
-	pattern := "https:\/\/\S+"
-	; Search for the pattern in the text
-	if RegExMatch(response, pattern, match) {
+} else {	; Define the regex needle for an HTTPS URL
+	needle := "https:\/\/\S+"
+	; Search for the needle in the haystack
+	if RegExMatch(response, needle, match) {
 		url:= match
 		msgbox,0,% "upload successful",% "upload successful and published to:`n" url,3
 	}
