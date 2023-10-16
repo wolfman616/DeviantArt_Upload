@@ -1,6 +1,8 @@
-﻿DetectHiddenWindows,On
+﻿#notrayicon
+menu,tray,icon,C:\Script\AHK\z_ConTxt\devart7824.ico
+DetectHiddenWindows,On
 DetectHiddenText,	On
-SetTitleMatchMode,2
+SetTitleMatchMode,2 
 SetTitleMatchMode,Slow
 SetWinDelay,-1
 coordMode,	ToolTip,Screen
@@ -39,7 +41,7 @@ WinSet, TransColor, ffffff, % "ahk_id " hGui1
 Gui, 1: Font, s11 bold, Segoe UI
 onmessage(0x201,"ONLbutton")
 
-Parent_ID := WinExist()
+Parent_ID := WinExist() 
 Gui, 2: +hwndbumhwnd +e0x2000000
 Gui, 2: Font, s10 , Segoe UI
 ;Gui, 2:margin,1,1
@@ -65,9 +67,9 @@ Child_ID := WinExist()
 ;DllCall("SetParent", "uint",  Child_ID, "uint", Parent_ID)
 Gui, 2: Add, Text, vtext2 w270 x7 y14 AltSubmit, Title:
 OnMessage(0x6,"col")
-Gui, 1: Show,x-300 y-200 w%gui_W% h%gui_H%,no_glass
+Gui, 1: Show,x-300 y-200 w%gui_W% h%gui_H%,Submit Deviation
 ;Gui, 1: Add, Text, vtext2 w270 x15 y15 AltSubmit, Please enter the Password:
-Gui, 2: Show, x0 y0 w300 h135,no_glass
+Gui, 2: Show, x0 y0 w300 h135,Submit Deviation
 Gui, 1: hide
 Aero_BlurWindow(ghwnd)
 ; win_move(ghwnd,A_screenwidth*.5-gui_W,A_screenheight*.5-gui_H,"","","")
@@ -91,10 +93,7 @@ if OPT_STARTUP_FOCUS_TITLE {
 	GuiControl,Focus,% edTagswnd
 	ControlSend,,{end},ahk_id %edTagswnd%
 	; SendMessage,0xB1,0,0,,ahk_id %edTagswnd%
-}
-
-
-return,
+} return,
 
 CheckChecks:
 opt_mature:=!opt_mature
@@ -134,7 +133,7 @@ winset,exstyle,-0x2000000,% "ahk_id " guiMat.Hwnd
 
 Win_Animate(guiMat.Hwnd,"hide blend",900)
 
-mature_level:= Moderate? "Moderate" : Strict? "Strict"
+mature_level:= Moderate? "moderate" : Strict? "strict"
 loop,parse,% "nudity,sexual,gore,language,ideology",`,
 	if (%A_loopfield%)!=0
 		mature_classification.= A_loopfield ","
@@ -236,15 +235,27 @@ if opt_mature {
 	return,
 }
 
-UploadStart: ;python.exe "C:\Script\Python\DAUpload.py" --title "PSYCHO515" --artist_comments "" --tags psychosis --mature no --is_dirty --file "%l"
-mature:= opt_mature? "yes" : "no"
-	string:= "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34)
-	string.=  " --title " . chr(34) . "PSYCHO515" . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --mature " . mature . " --mature_level " . mature_level . " --mature_classification " . mature_classification . " --is_dirty --file " . chr(34) . TargetFile . chr(34)
+UploadStart: ;python.exe "C:\Script\Python\DAUpload.py" --title "PSYCHO515" --artist_comments "" --tags "Psychosis,abstract" --mature no --mature_level "" --mature_classification "" --is_dirty --file "C:\Users\ninj\Desktop11\test.png"
+string:= "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34)
+string.=  " --title " . chr(34) . "PSYCHO515" . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --mature " . mature:= opt_mature? "yes" : "no"
+
+opt_mature? string.= " --mature_level " . mature_level . " --mature_classification " . mature_classification : ()
+
+string .=  " --is_dirty --file " . chr(34) . TargetFile . chr(34)
+
+; string := "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34) .
+  ; " --title " . chr(34) . "PSYCHO515" . chr(34) .
+  ; " --artist_comments " . chr(34) . DeviationDesc . chr(34) .
+  ; " --tags " . tags .
+  ; " --mature " . (opt_mature ? "yes" . " --mature_level " . mature_level . " --mature_classification " . mature_classification : "no") .
+  ; " --is_dirty --file " . chr(34) . TargetFile . chr(34)
+
 Gui, 1: Destroy
  ; msgbox %  string
  ;msgbox % 
- response:= RunWait1(string)
-if instr(response,"Bad token: The access token is invalid") {
+ response1:= RunWait1(string)
+ ;msgbox % response1
+if instr(response1,"Bad token: The access token is invalid") {
 	string2:= "python.exe " . chr(34) . "C:\Script\Python\DAAuthorization.py" . chr(34)
 	; msgbox % 
 	response2:= RunWait1(string2)
@@ -252,34 +263,25 @@ if instr(response,"Bad token: The access token is invalid") {
 		string3:= "python.exe " . chr(34) . "C:\Script\Python\DATokenRetrieval.py" . chr(34)
 		; msgbox % "n  " 		
 		response3:= RunWait1(string3)
-		goto, uploadstart
+		goto, UploadStart
 	}
 } else {	; Define the regex needle for an HTTPS URL
 	needle := "https:\/\/\S+"
 	; Search for the needle in the haystack
-	if RegExMatch(response, needle, match) {
-		url:= match
-		msgbox,0,% "upload successful",% "upload successful and published to:`n" url,3
+	if RegExMatch(response1,needle,match) {
+		if url:= match
+			msgbox,0,% "upload successful",% "upload successful and published to:`n" url,3
+		else msgbox,0,% "upload Failed",% response1,3
 	}
-}
-
-;} else msgbox,4, upload successful, publish now?
-
-; if msgbox,yes {
-
-; }
-
-; if msgbox,no {
-	; ExitApp,
-; }
-
-ExitApp,
+} ExitApp,
 return,
 
 RunWait1(command) {
-	DllCall("AllocConsole")
-	WinHide,% "ahk_id " DllCall("GetConsoleWindow","ptr")
-	shell:=ComObjCreate("WScript.Shell")
-	exec:=shell.Exec(ComSpec " /C " command)
-	return,exec.StdOut.ReadAll()
+    DllCall("AllocConsole")
+    WinHide,% "ahk_id " DllCall("GetConsoleWindow","ptr")
+    shell := ComObjCreate("WScript.Shell")
+    exec := shell.Exec(ComSpec " /C " command)
+    stdout := exec.StdOut.ReadAll() ; Capture standard output
+    stderr := exec.StdErr.ReadAll() ; Capture standard error
+    return stdout . "`n" . stderr ; Combine stdout and stderr
 }
