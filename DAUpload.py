@@ -2,7 +2,23 @@ import argparse
 import os
 import requests
 import winreg
+import sys
 
+parser = argparse.ArgumentParser(description="Upload and publish a file to DeviantArt stash.")
+parser.add_argument("--title", required=True, help="Title of the submission")
+parser.add_argument("--artist_comments", help="Additional comments by the artist")
+parser.add_argument("--tags_csv", help="CSV string of tags for the submission (e.g., 'tag1,tag2,tag3')")
+parser.add_argument("--is_dirty", action="store_true", help="Is the submission currently being edited")
+parser.add_argument("--mature", choices=["yes", "no"], default="no", help="Set mature status (yes or no, default is no)")
+parser.add_argument("--mature_level", choices=["strict", "moderate"], default=None, help="Mature level of the submission (optional)")
+parser.add_argument("--mature_classification_csv", default=None, help="CSV string of mature classification values (e.g., 'nudity,gore,language') (optional)")
+parser.add_argument("--file", required=True, help="Path to the file to upload")
+
+# Check for the -h option, and if present, display the help message and exit
+if "-h" in sys.argv or "--help" in sys.argv:
+    parser.print_help()
+    sys.exit(0)
+    
 registry_key = r'Software\_MW'
 
 # Define the value names for Deviantart Code, Client Secret and Client ID
@@ -149,21 +165,11 @@ def publish_to_deviantart(item_id, is_mature="no", mature_level=None, mature_cla
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Upload and publish a file to DeviantArt stash.")
-    parser.add_argument("--title", required=True, help="Title of the submission")
-    parser.add_argument("--artist_comments", help="Additional comments by the artist")
-    parser.add_argument("--tags_csv", help="CSV string of tags for the submission (e.g., 'tag1,tag2,tag3')")
-    parser.add_argument("--is_dirty", action="store_true", help="Is the submission currently being edited")
-    parser.add_argument("--mature", choices=["yes", "no"], default="no", help="Set mature status (yes or no, default is no")
-    parser.add_argument("--mature_level", choices=["strict", "moderate"], help="Mature level of the submission (required if 'mature' is 'yes')")
-    parser.add_argument("--mature_classification_csv", help="CSV string of mature classification values (e.g., 'nudity,gore,language')")
-    parser.add_argument("--file", required=True, help="Path to the file to upload")
-
     args = parser.parse_args()
 
-    if args.mature == "yes" and (not args.mature_level or not args.mature_classification_csv):
-        parser.error("If 'mature' is 'yes', 'mature_level' and 'mature_classification_csv' are required.")
-
+    if args.mature == "yes" and args.mature_level is None:
+        parser.error("If 'mature' is 'yes', 'mature_level' is required.")
+    
     # Convert the CSV string of tags to a list
     if args.tags_csv:
         tags_list = args.tags_csv.split(',')

@@ -17,7 +17,7 @@ global gui_W:=300, gui_H:=166, tags
 
 SplitPath,TargetFile,,,Extension
 
-valid_extensions:= "jpg,png,tiff,jfif,bmp,webp,gif,apng"
+valid_extensions:= "jpg,jpeg,png,tiff,jfif,bmp,webp,gif,apng"
 
 loop,parse,valid_extensions,`,
 	if(Extension=a_loopfield)
@@ -235,26 +235,17 @@ if opt_mature {
 	return,
 }
 
-UploadStart: ;python.exe "C:\Script\Python\DAUpload.py" --title "PSYCHO515" --artist_comments "" --tags "Psychosis,abstract" --mature no --mature_level "" --mature_classification "" --is_dirty --file "C:\Users\ninj\Desktop11\test.png"
+UploadStart:
 string:= "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34)
-string.=  " --title " . chr(34) . "PSYCHO515" . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --mature " . mature:= opt_mature? "yes" : "no"
-
-opt_mature? string.= " --mature_level " . mature_level . " --mature_classification " . mature_classification : ()
+string.=  " --title " . chr(34) . DeviationTitle . chr(34) . " --artist_comments " . chr(34) . DeviationDesc . chr(34) . " --tags " . tags . " --mature " . mature:= opt_mature? "yes" : "no"
+(mature_classification= chr(34) . chr(34))?	mature_classification:="" : ()
+opt_mature ? (string .= " --mature_level " . (mature_level !== "" ? chr(34) . mature_level . chr(34) : "")) : ()
+(opt_mature && mature_classification != "")? string .= " --mature_classification " . chr(34) . mature_classification . chr(34) : ()
 
 string .=  " --is_dirty --file " . chr(34) . TargetFile . chr(34)
 
-; string := "python.exe " . chr(34) . "C:\Script\Python\DAUpload.py" . chr(34) .
-  ; " --title " . chr(34) . "PSYCHO515" . chr(34) .
-  ; " --artist_comments " . chr(34) . DeviationDesc . chr(34) .
-  ; " --tags " . tags .
-  ; " --mature " . (opt_mature ? "yes" . " --mature_level " . mature_level . " --mature_classification " . mature_classification : "no") .
-  ; " --is_dirty --file " . chr(34) . TargetFile . chr(34)
-
 Gui, 1: Destroy
- ; msgbox %  string
- ;msgbox % 
  response1:= RunWait1(string)
- ;msgbox % response1
 if instr(response1,"Bad token: The access token is invalid") {
 	string2:= "python.exe " . chr(34) . "C:\Script\Python\DAAuthorization.py" . chr(34)
 	; msgbox % 
