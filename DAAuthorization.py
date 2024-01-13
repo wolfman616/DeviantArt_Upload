@@ -19,6 +19,7 @@ deviantart_code_name = 'DeviantartCode'
 deviantart_client_id_name = 'deviantartClientID'
 deviantart_client_secret_name = 'deviantartClientSecret'
 deviantart_access_token_name = 'deviantartAccessToken'
+deviantart_refresh_token_name = 'deviantartRefreshToken'
 
 
 try:
@@ -45,6 +46,10 @@ try:
             deviantart_access_token, _ = winreg.QueryValueEx(key, deviantart_access_token_name)
         except FileNotFoundError:
             print(f"Registry value '{deviantart_access_token_name}' not found in '{registry_key}'.")
+        try:
+            deviantart_refresh_token, _ = winreg.QueryValueEx(key, deviantart_refresh_token_name)
+        except FileNotFoundError:
+            print(f"Registry value '{deviantart_refresh_token_name}' not found in '{registry_key}'.")
 
 except FileNotFoundError:
     print(f"Registry key '{registry_key}' not found.")
@@ -74,6 +79,12 @@ if deviantart_access_token:
     print(f"Deviantart access token: {deviantart_access_token}")
 else:
     print("No Deviantart access token")
+
+
+if deviantart_refresh_token:
+    print(f"Deviantart Refresh token: {deviantart_refresh_token}")
+else:
+    print("No Deviantart refresh token")
 
 
 # Define the URL for user authorization

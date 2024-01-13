@@ -26,12 +26,14 @@ deviantart_code_name = 'DeviantartCode'
 deviantart_client_id_name = 'deviantartClientID'
 deviantart_client_secret_name = 'deviantartClientSecret'
 deviantart_access_token_name = 'deviantartAccessToken'
+deviantart_refresh_token_name = 'deviantartRefreshToken'
 
 # Initialize variables
 deviantart_code = ""
 deviantart_client_id = ""
 deviantart_client_secret = ""
 deviantart_access_token = ""
+deviantart_refresh_token = ""
 
 try:
     # Open the Registry key
@@ -57,6 +59,11 @@ try:
             deviantart_access_token, _ = winreg.QueryValueEx(key, deviantart_access_token_name)
         except FileNotFoundError:
             print(f"Registry value '{deviantart_access_token_name}' not found in '{registry_key}'.")
+
+        try:
+            deviantart_refresh_token, _ = winreg.QueryValueEx(key, deviantart_refresh_token_name)
+        except FileNotFoundError:
+            print(f"Registry value '{deviantart_refresh_token_name}' not found in '{registry_key}'.")
 
 except FileNotFoundError:
     print(f"Registry key '{registry_key}' not found.")
@@ -87,6 +94,11 @@ if deviantart_access_token:
 else:
     print("No Deviantart access token")
 
+if deviantart_refresh_token:
+    print(f"Deviantart refresh token: {deviantart_refresh_token}")
+else:
+    print("No Deviantart refresh token")
+
 # Define your API endpoints and access token
 upload_url = "https://www.deviantart.com/api/v1/oauth2/stash/submit"
 publish_url = "https://www.deviantart.com/api/v1/oauth2/stash/publish"
@@ -114,7 +126,7 @@ def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path, is_m
     }
 
     headers = {
-        "Authorization": f"Bearer {deviantart_access_token}",
+        "Authorization": f"Bearer {deviantart_refresh_token}",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0"  # Replace with your User Agent
     }
 
@@ -128,6 +140,7 @@ def upload_to_deviantart(title, artist_comments, tags, is_dirty, file_path, is_m
     else:
         if "invalid_token" in response.text:
             print("Bad token: The access token is invalid or expired. You need to refresh it.")
+            print(response.text)
         else:
             print("Upload failed. Status code:", response.status_code)
             print(response.text)

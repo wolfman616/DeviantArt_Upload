@@ -11,13 +11,18 @@ coordmode,	Mouse,	Screen
 SetWinDelay, -1
 global gui_W:=300, gui_H:=166, tags
 , OPT_STARTUP_FOCUS_TAGS:= true, dhwcheck
+
 , TargetFile:= a_args[1]? a_args[1] : "C:\Users\ninj\Desktop11\test.png"
+
+, default_tags := "Psychosis, AI, AIART, "
+
 , opt_mature:= false
+
 , opt_guiAeroBlur:= true
 
-SplitPath,TargetFile,,,Extension
+, valid_extensions:= "jpg,jpeg,png,tiff,jfif,bmp,webp,gif,apng"
 
-valid_extensions:= "jpg,jpeg,png,tiff,jfif,bmp,webp,gif,apng"
+SplitPath,TargetFile,,,Extension
 
 loop,parse,valid_extensions,`,
 	if(Extension=a_loopfield)
@@ -28,7 +33,7 @@ if(!continue) {
 	exitapp,
 }
 
-opt_guiAeroBlur? 	(aero_lib(), Aero_StartUp()) : ()
+opt_guiAeroBlur? (aero_lib(), Aero_StartUp()) : ()
 
 
 WS_POPUP = 0x80000000
@@ -51,12 +56,12 @@ WinSet, TransColor, 000000, % "ahk_id " hGui2
 Gui, 2: Font, s10 , Segoe UI
 Gui, 1: Add, Edit, x53 +hwndedTitlewnd y+12 r1 w237 Limit80 vDeviationTitle,PSYCHO515
 Gui, 1: Add, Edit, x53 +hwndedDescwnd y54 w237 vDeviationDesc
-Gui, 1: Add, Edit, x53 +hwndedTagswnd y94 w237 vtags,% "Psychosis "
+Gui, 1: Add, Edit, x53 +hwndedTagswnd y94 w237 vtags,% default_tags
 Gui, 2: Add, Text, vtext0 w44 x7 y56 AltSubmit, Desc:
 Gui, 2: Add, Text, vtext1 w44 x7 y96 AltSubmit, Tags:
 ; gui,1:	Add,Picture,X0 Y0 BackgroundTrans,% "C:\Script\AHK\GDI\images\glass.png"
 Gui, 1: Add, Button,% "x" (.5*gui_W-40) " y128 w80 h30  gguiSubmit Default", Submit
-Gui, 1: Add, Button,% "x" (.5*gui_W+55) " y128 w80 h30  gcancel Default", Cancel
+Gui, 1: Add, Button,% "x" (.5*gui_W+55) " y128 w80 h30  gcancel", Cancel
 gui,	1:Add,CheckBox,+hwnddhwcheck gCheckChecks vopt_mature x12 y128 w60 h24 check3 Checked%mature%, 18+
 ;winset transcolor, 000000, ahk_id %dhwcheck%
 if opt_mature
@@ -246,14 +251,21 @@ string .=  " --is_dirty --file " . chr(34) . TargetFile . chr(34)
 
 Gui, 1: Destroy
  response1:= RunWait1(string)
+ msgbox %  "resp1 "response1
 if instr(response1,"Bad token: The access token is invalid") {
+msgbox bad token
 	string2:= "python.exe " . chr(34) . "C:\Script\Python\DAAuthorization.py" . chr(34)
 	; msgbox % 
 	response2:= RunWait1(string2)
 	if instr(response2,"Authorization code received") {
+		msgbox auth recv
+ msgbox % "resp2 " response2
+
 		string3:= "python.exe " . chr(34) . "C:\Script\Python\DATokenRetrieval.py" . chr(34)
 		; msgbox % "n  " 		
 		response3:= RunWait1(string3)
+		 msgbox % "resp3 " response3
+
 		goto, UploadStart
 	}
 } else {	; Define the regex needle for an HTTPS URL
